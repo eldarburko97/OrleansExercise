@@ -1,12 +1,8 @@
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Orleans;
+using Orleans.Configuration;
 using Orleans.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OrleansExercise
 {
@@ -14,27 +10,25 @@ namespace OrleansExercise
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            CreateHostBuilder(args: args).Build().Run();
         }
 
-        public static IHostBuilder CreateHostBuilder(string[] args) =>
-            Host.CreateDefaultBuilder(args)
-                .ConfigureWebHostDefaults(webBuilder =>
+        public static IHostBuilder CreateHostBuilder(string[] args)
+        {
+            return Host.CreateDefaultBuilder(args: args)
+                .ConfigureWebHostDefaults(configure: webBuilder => { webBuilder.UseStartup<Startup>(); })
+                .UseOrleans(configureDelegate: builder =>
                 {
-                    webBuilder.UseStartup<Startup>();
-                })
-            .UseOrleans(builder =>
-            {
-                builder.UseLocalhostClustering();
-                //builder.UseAzureStorageClustering();
-                builder.AddAzureTableGrainStorage(
-                    name: "studentStore",
-                    configureOptions: options =>
+                    builder.Configure<ClusterOptions>(configureOptions: options =>
                     {
-                        options.UseJson = true;
-
-                        options.ConnectionString = "DefaultEndpointsProtocol=https;AccountName=data1;AccountKey=SOMETHING1";
+                        options.ClusterId = "my-first-cluster";
+                        options.ServiceId = "AspNetSampleApp";
                     });
-            });
+                    builder.ConfigureEndpoints(siloPort: 11111, gatewayPort: 30000);
+                    builder.UseAzureStorageClustering(configureOptions: options => { options.ConnectionString = "UseDevelopmentStorage=true"; });
+
+                    builder.UseDashboard();
+                });
+        }
     }
 }

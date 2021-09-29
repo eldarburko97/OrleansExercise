@@ -1,18 +1,13 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
+using Orleans.Runtime;
 using OrleansExercise.Database;
 using OrleansExercise.Grains;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OrleansExercise
 {
@@ -28,15 +23,12 @@ namespace OrleansExercise
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "OrleansExercise", Version = "v1" });
-            });
-            services.AddDbContext<OrleansDbContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddSwaggerGen(setupAction: c => { c.SwaggerDoc(name: "v1", info: new OpenApiInfo { Title = "OrleansExercise", Version = "v1" }); });
+            services.AddDbContext<OrleansDbContext>(optionsAction: options => options.UseSqlServer(connectionString: Configuration.GetConnectionString(name: "DefaultConnection")));
             services.AddAutoMapper(typeof(Startup));
             services.AddTransient<IStudentGrain, StudentGrain>();
+            services.AddTransient<IPersistentState<Student>, StudentPersistentState>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -46,17 +38,14 @@ namespace OrleansExercise
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "OrleansExercise v1"));
+                app.UseSwaggerUI(setupAction: c => c.SwaggerEndpoint(url: "/swagger/v1/swagger.json", name: "OrleansExercise v1"));
             }
 
             app.UseRouting();
 
             app.UseAuthorization();
 
-            app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            app.UseEndpoints(configure: endpoints => { endpoints.MapControllers(); });
         }
     }
 }

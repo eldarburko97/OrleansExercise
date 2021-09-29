@@ -1,9 +1,7 @@
 ﻿using AutoMapper;
+using OrleansExercise.Database;
+using OrleansExercise.Models;
 using OrleansExercise.Requests;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace OrleansExercise.Mapper
 {
@@ -11,8 +9,8 @@ namespace OrleansExercise.Mapper
     {
         public AppMapper()
         {
-            CreateMap<Database.Student, Models.Student>().ReverseMap();
-            CreateMap<Database.Student, StudentInsertRequest>().ReverseMap();
+            CreateMap<Student, StudentModel>().ReverseMap();
+            CreateMap<Student, StudentInsertRequest>().ReverseMap();
         }
     }
 }
