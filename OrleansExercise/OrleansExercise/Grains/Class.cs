@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Orleans.Runtime;
 using OrleansExercise.Database;
@@ -16,7 +17,7 @@ namespace OrleansExercise.Grains
 
         public Task ClearStateAsync()
         {
-            _dbContext.Students.Remove(State);
+            _dbContext.Students.Remove(entity: State);
             _dbContext.SaveChanges();
         }
 
@@ -24,14 +25,14 @@ namespace OrleansExercise.Grains
         {
             if (State != null)
             {
-                var exists = _dbContext.Students.Any(k => k.Id == State.Id);
+                var exists = _dbContext.Students.Any(predicate: k => k.Id == State.Id);
                 if (exists)
                 {
-                    _dbContext.Students.Update(State);
+                    _dbContext.Students.Update(entity: State);
                 }
                 else
                 {
-                    _dbContext.Students.Add(State);
+                    _dbContext.Students.Add(entity: State);
                 }
 
                 _dbContext.SaveChanges();
@@ -42,7 +43,7 @@ namespace OrleansExercise.Grains
 
         public Task ReadStateAsync()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public string Etag { get; }

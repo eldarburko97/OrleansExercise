@@ -17,12 +17,14 @@ namespace OrleansExercise.Grains
         {
             _persistent = persistent;
         }
+
         public async Task<List<StudentModel>> Get()
         {
             if (State != null)
             {
                 await _persistent.ReadStateAsync();
             }
+
             return State;
         }
 
